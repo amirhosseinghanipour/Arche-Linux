@@ -1,7 +1,7 @@
 base
 cloud-init
 hyperv
-linux
+linux-hardened
 mkinitcpio
 mkinitcpio-archiso
 open-vm-tools
@@ -12,3 +12,4 @@ syslinux
 virtualbox-guest-utils-nox
 iwd
 gnupg
+vim

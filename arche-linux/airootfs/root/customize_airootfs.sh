@@ -2,9 +2,11 @@
 
 systemctl enable systemd-networkd
 systemctl enable iwd
+systemctl enable iptables
 
 systemctl start systemd-networkd
 systemctl start iwd
+systemctl start iptables
 
 [ -f /etc/systemd/network/20-ethernet.network ] || {
   echo "Error: Missing 20-ethernet.network"
