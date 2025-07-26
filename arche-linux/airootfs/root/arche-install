@@ -50,33 +50,41 @@ verify_iso() {
   title
   wprintf "ISO integrity verification is a crucial step to ensure your installation medium is authentic and has not been tampered with.\n\n"
   wprintf "To proceed, you will need:\n"
-  wprintf "  1. The Arche Linux public GPG key (imported into your GPG keyring).\n"
-  wprintf "  2. The path to the ISO signature file (e.g., /path/to/arche.iso.sig).\n\n"
+  wprintf "  1. The Arche Linux public GPG key (already imported into your GPG keyring).\n"
+  wprintf "  2. The 'sha256sums.txt' file.\n"
+  wprintf "  3. The 'sha256sums.txt.sig' signature file.\n\n"
 
   read -r -p "Do you want to perform this verification now? (y/N): " choice
   case "$choice" in
   y | Y)
-    wprintf "\nPlease enter the path to the ISO signature file (.sig): "
+    wprintf "\nPlease enter the path to the checksums file (sha256sums.txt): "
+    read -r checksum_file
+    wprintf "Please enter the path to the signature file (sha256sums.txt.sig): "
     read -r sig_file
-    wprintf "Please enter the path to the Arche Linux ISO file: "
-    read -r iso_file
 
-    if [ ! -f "$sig_file" ] || [ ! -f "$iso_file" ]; then
+    if [ ! -f "$checksum_file" ] || [ ! -f "$sig_file" ]; then
       err "One or both of the specified files could not be found."
       exit $FAILURE
     fi
 
-    wprintf "\nVerifying... this may take a moment.\n"
-    if gpg --verify "$sig_file" "$iso_file"; then
-      wprintf "\n${CYANB}Verification successful! The ISO is authentic and unmodified.${NC}\n"
-      sleep 3
+    wprintf "\nVerifying checksum signature...\n"
+    if gpg --verify "$sig_file" "$checksum_file"; then
+      wprintf "\n${CYANB}GPG verification successful! The checksums file is authentic.${NC}\n\n"
+      wprintf "Now, checking the ISO file against the trusted checksums...\n"
+      if sha256sum -c "$checksum_file" --ignore-missing; then
+        wprintf "\n${CYANB}ISO integrity confirmed! The ISO matches the checksum and is ready to install.${NC}\n"
+        sleep 4
+      else
+        err "ISO check FAILED! The ISO is corrupt or does not match the provided checksums."
+        exit $FAILURE
+      fi
     else
-      err "GPG verification FAILED! The ISO may be corrupt or tampered with. Do not proceed with installation."
+      err "GPG verification FAILED! The checksums file may be corrupt or tampered with. Do not proceed."
       exit $FAILURE
     fi
     ;;
   *)
-    warn "You have chosen to skip verification. Proceed with caution."
+    warn "You have chosen to skip verification. Proceed with extreme caution."
     sleep 3
     ;;
   esac
