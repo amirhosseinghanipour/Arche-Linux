@@ -248,10 +248,12 @@ install_system() {
     err "Package list /root/package-list.x86_64 not found"
     exit $FAILURE
   }
-  pacstrap $CHROOT - </root/packages.x86_64 || {
+  pacstrap $CHROOT - </root/package-list.x86_64 || {
     err "Failed to install system packages"
     exit $FAILURE
   }
+  wprintf '[+] Installing local packages...\n'
+  chroot $CHROOT pacman -U --noconfirm /root/local_packages/oh-my-zsh-git-*.pkg.tar.zst
 }
 
 # Fstab
@@ -312,14 +314,8 @@ setup_user() {
   chroot $CHROOT passwd "$NORMAL_USER"
   wprintf "[+] Set password for root\n"
   chroot $CHROOT passwd
-  sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' "$CHROOT/etc/sudoers"
-  chroot $CHROOT bash -c "echo 'export PATH=\$PATH' > /home/$NORMAL_USER/.zshrc"
   chroot $CHROOT chsh -s /bin/zsh root
-  chroot $CHROOT bash -c "echo 'export PATH=\$PATH' > /root/.zshrc"
-  install -Dm644 /etc/skel/.xinitrc "$CHROOT/home/$NORMAL_USER/.xinitrc"
-  install -d "$CHROOT/home/$NORMAL_USER/.config/i3"
-  install -Dm644 /etc/skel/.config/i3/config "$CHROOT/home/$NORMAL_USER/.config/i3/config"
-  chroot $CHROOT chown -R "$NORMAL_USER:$NORMAL_USER" "/home/$NORMAL_USER"
+  sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' "$CHROOT/etc/sudoers"
 }
 
 # Network
@@ -386,4 +382,3 @@ main() {
 }
 
 main "$@"
-
