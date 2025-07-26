@@ -347,8 +347,8 @@ setup_bootloader() {
     UUID=$(blkid -s UUID -o value "$ROOT_PART")
     cat >"$CHROOT/boot/loader/entries/arche.conf" <<EOF
 title   Arche Linux
-linux   /vmlinuz-linux
-initrd  /initramfs-linux.img
+linux   /vmlinuz-linux-hardened
+initrd  /initramfs-linux-hardened.img
 options root=UUID=$UUID rw slab_nomerge pti=on
 EOF
   else
