@@ -2,7 +2,6 @@ base
 cloud-init
 hyperv
 linux-hardened
-linux-firmware
 mkinitcpio
 mkinitcpio-archiso
 open-vm-tools
